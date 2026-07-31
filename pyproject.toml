@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "liquid-neural-benchmark"
+version = "0.1.0"
+description = "A unified benchmark for Liquid Neural Networks."
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [
+    {name = "Nancy Akoum"}
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = [
+    "benchmark*",
+    "datasets*"
+]
+exclude = [
+    "tests*",
+    "notebooks*",
+    "docs*",
+    "scripts*",
+    "results*",
+    "configs*"
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
