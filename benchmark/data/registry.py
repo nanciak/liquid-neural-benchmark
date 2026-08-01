@@ -1,55 +1,69 @@
-"""Central registry for benchmark model builders."""
+"""Central registry for benchmark dataset builders."""
 
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import Any
 
-from benchmark.models.base import SequenceModel
-
-
-ModelBuilder = Callable[[int, int, object], SequenceModel]
-_MODEL_REGISTRY: dict[str, ModelBuilder] = {}
+from benchmark.data.bundle import DataBundle
 
 
-def _normalize_model_name(name: str) -> str:
-    """Return a validated, normalized model name."""
+DatasetBuilder = Callable[[Any], DataBundle]
+_DATASET_REGISTRY: dict[str, DatasetBuilder] = {}
+
+
+def _normalize_dataset_name(name: str) -> str:
+    """Return a validated, normalized dataset name."""
 
     normalized_name = name.strip().lower()
+
     if not normalized_name:
-        raise ValueError("Model name cannot be empty.")
+        raise ValueError("Dataset name cannot be empty.")
 
     return normalized_name
 
 
-def register_model(name: str, builder: ModelBuilder) -> None:
-    """Register a model builder under a normalized unique name."""
+def register_dataset(
+    name: str,
+    builder: DatasetBuilder,
+) -> None:
+    """Register a dataset builder under a normalized unique name."""
 
-    normalized_name = _normalize_model_name(name)
+    normalized_name = _normalize_dataset_name(name)
 
-    existing_builder = _MODEL_REGISTRY.get(normalized_name)
+    existing_builder = _DATASET_REGISTRY.get(normalized_name)
+
     if existing_builder is not None:
         if existing_builder is builder:
             return
-        raise ValueError(f"Model already registered: {normalized_name}")
 
-    _MODEL_REGISTRY[normalized_name] = builder
+        raise ValueError(
+            f"Dataset already registered: {normalized_name}"
+        )
+
+    _DATASET_REGISTRY[normalized_name] = builder
 
 
-def get_model_builder(name: str) -> ModelBuilder:
-    """Return the registered builder for a model name."""
+def get_dataset_builder(
+    name: str,
+) -> DatasetBuilder:
+    """Return the registered builder for a dataset name."""
 
-    normalized_name = _normalize_model_name(name)
+    normalized_name = _normalize_dataset_name(name)
 
     try:
-        return _MODEL_REGISTRY[normalized_name]
+        return _DATASET_REGISTRY[normalized_name]
+
     except KeyError as error:
-        available = ", ".join(available_models()) or "none"
+        available = ", ".join(available_datasets()) or "none"
+
         raise KeyError(
-            f"Unknown model '{name}'. Available models: {available}"
+            f"Unknown dataset '{name}'. "
+            f"Available datasets: {available}"
         ) from error
 
 
-def available_models() -> tuple[str, ...]:
-    """Return all registered model names in alphabetical order."""
+def available_datasets() -> tuple[str, ...]:
+    """Return all registered dataset names in alphabetical order."""
 
-    return tuple(sorted(_MODEL_REGISTRY))
+    return tuple(sorted(_DATASET_REGISTRY))
